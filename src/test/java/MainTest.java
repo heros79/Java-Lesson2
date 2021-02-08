@@ -35,43 +35,23 @@ public class MainTest {
         }
     }
 
-    private int[] arr(int[] array, int n) {
-        int temporary = array[0];
-        int mark = 0;
-        boolean odd = false;
-        int arrLength = array.length;
+    private int[] arr(int[] task7, int n) {
+        int r = 0;
+        if (n > 0) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < task7.length - 1; j++) {
+                    r = task7[j + 1];
+                    task7[j + 1] = task7[0];
+                    task7[0] = r;
+                    System.out.print(r);
+                }
 
-        if (n % 2 == 0 && array.length % 2 == 0) {
-            odd = true;
-        }
-
-        for (int i = 0; i < array.length; i++) {
-            int position = reassignNumber(arrLength, mark + n);
-            int newIndex = array[position];
-            array[position] = temporary;
-            if (odd && i % 2 != 0) {
-                mark = position + 1;
-                temporary = array[mark];
-            } else {
-                mark = position;
-                temporary = newIndex;
             }
         }
-        return array;
+        return task7;
     }
 
-    public static int reassignNumber(int arrLength, int number){
-        if (number < 0) {
-            while (number <= 0) {
-                number += arrLength;
-            }
-        } else {
-            while (number >= arrLength) {
-                number -= arrLength;
-            }
-        }
-        return number;
-    }
+
 
 
     @Test
@@ -88,25 +68,21 @@ public class MainTest {
 
     }
 
-    private boolean foo(int[] massive) {
-        int left_sum=massive[0];
-        int right_sum=massive[massive.length-1];
+    private boolean foo(int[] task6) {
+        int leftSum = task6[0] + task6[1];
+        int rightSum = 0;
 
-        for (int i = 1 ; i < massive.length ; i++) {
-            left_sum+= massive[i];
-            right_sum=massive[massive.length-1];
-            for (int descending = massive.length-2; descending > i ; descending--) {
-                right_sum += massive[descending];
-                if (right_sum > left_sum) {
-                    break;
-                }
-            }
-            if(left_sum==right_sum){
-                System.out.println("\n\nTask6\nThe index of the end of the left side:"+i);
-                return true;
-            }
+        for (int r = 2; r < task6.length; r++) {
+            rightSum += task6[r];
         }
-
+        if (leftSum == rightSum) {
+            return true;
+        }
+        for (int r = 0; r < task6.length - 4; r++) {
+            leftSum += task6[r + 2];
+            rightSum -= task6[r + 2];
+            if (leftSum == rightSum) return true;
+        }
         return false;
     }
 }
