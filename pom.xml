@@ -7,7 +7,10 @@
     <groupId>org.example</groupId>
     <artifactId>FirstLesson</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <modules>
+        <module>Chat</module>
+    </modules>
+    <packaging>pom</packaging>
     <build>
         <plugins>
             <plugin>
@@ -35,11 +38,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.16</version>
             <scope>provided</scope>
         </dependency>
 

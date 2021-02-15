@@ -1,9 +1,7 @@
-package client;
+package clientside.one;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
@@ -13,11 +11,12 @@ import java.net.Socket;
 
 public class EchoClient extends JFrame {
 
-    private final Integer SERVER_PORT = 8189;
+    private final Integer SERVER_PORT = 8081;
     private final String SERVER_ADDRESS = "localhost";
     private Socket socket;
     DataInputStream dis;
     DataOutputStream dos;
+    boolean isAuthorized = false;
 
     private JTextField msgInputField;
     private JTextArea chatArea;
@@ -31,24 +30,29 @@ public class EchoClient extends JFrame {
         prepareGUI();
     }
 
-    public void connection () throws IOException {
+    public void connection() throws IOException {
         socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
         dis = new DataInputStream(socket.getInputStream());
         dos = new DataOutputStream(socket.getOutputStream());
         new Thread(() -> {
-
             try {
                 while (true) {
-                    String message = dis.readUTF();
-                    if (message.equalsIgnoreCase("/finish")) {
-                        this.dispose();
+                    String messageFromServer = dis.readUTF();
+                    if (messageFromServer.startsWith("/authok")) {
+                        isAuthorized = true;
+                        chatArea.append(messageFromServer + "\n");
                         break;
                     }
-                    chatArea.append(message + "\n");
+                    chatArea.append(messageFromServer + "\n");
                 }
-            } catch (IOException ignored){
-            }
 
+                while (isAuthorized) {
+                    String messageFromServer = dis.readUTF();
+                    chatArea.append(messageFromServer + "\n");
+                }
+            } catch (IOException ignored) {
+
+            }
         }).start();
     }
 
@@ -56,12 +60,33 @@ public class EchoClient extends JFrame {
         if (msgInputField.getText() != null && !msgInputField.getText().trim().isEmpty()) {
             try {
                 dos.writeUTF(msgInputField.getText());
-                chatArea.append(msgInputField.getText() + "\n");
+                if (msgInputField.getText().equals("/end")) {
+                    isAuthorized = false;
+                    closeConnection();
+                }
                 msgInputField.setText("");
             } catch (IOException ignored) {
             }
         }
     }
+
+    private void closeConnection() {
+        try {
+            dis.close();
+            dos.close();
+            socket.close();
+        } catch (IOException ignored) {
+        }
+    }
+
+    /*public void onAuthClcik() {
+        try {
+            dos.writeUTF("/auth" + " " + loginField.getText() + " " + passwordField.getText());
+            loginField.setText("");
+            passwordField.setText("");
+        } catch (IOException ignored) {
+        }
+    }*/
 
 
     public void prepareGUI() {

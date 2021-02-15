@@ -16,8 +16,8 @@ public class MainTest {
             assertEquals(afterArrN4[i], testArrN4[i]);
         }
 
-        int[] arrN3 = {1, 2, 3, 4, 5};
-        int[] afterArrN3 = {3, 4, 5, 1, 2};
+        int[] arrN3 = {1, 2, 3, 4, 5, 6};
+        int[] afterArrN3 = {4, 2, 3, 1, 1, 2};
         n = 3;
         int[] testArrN3 = arr(arrN3, n);
 
@@ -35,20 +35,23 @@ public class MainTest {
         }
     }
 
-    private int[] arr(int[] task7, int n) {
-        int r = 0;
-        if (n > 0) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < task7.length - 1; j++) {
-                    r = task7[j + 1];
-                    task7[j + 1] = task7[0];
-                    task7[0] = r;
-                    System.out.print(r);
-                }
+    private int[] arr(int[] arr, int n) {
+        int temp = arr[0];
+        int currentIndex = n;
+        int jumps = 1;
 
+        while(jumps <= arr.length) {
+            int swap = arr[currentIndex % arr.length];
+            arr[currentIndex % arr.length] = temp;
+            temp = swap;
+            if ((jumps * n) % arr.length == 0) {
+                currentIndex++;
+                temp = arr[currentIndex % arr.length];
             }
+            currentIndex += n;
+            jumps++;
         }
-        return task7;
+        return arr;
     }
 
 
@@ -68,21 +71,23 @@ public class MainTest {
 
     }
 
-    private boolean foo(int[] task6) {
-        int leftSum = task6[0] + task6[1];
-        int rightSum = 0;
+    private boolean foo(int[] arr) {
+        int sumLeft = arr[0] + arr[1];
+        int sumRight;
+        int sum = 0;
 
-        for (int r = 2; r < task6.length; r++) {
-            rightSum += task6[r];
+        for (int i = 0; i < arr.length; i++) {
+            sum += arr[i];
         }
-        if (leftSum == rightSum) {
-            return true;
+
+        for (int i = 2; i < arr.length - 2; i++) {
+            sumRight = sum - sumLeft;
+            if (sumLeft == sumRight) {
+                return true;
+            }
+            sumLeft += arr[i];
         }
-        for (int r = 0; r < task6.length - 4; r++) {
-            leftSum += task6[r + 2];
-            rightSum -= task6[r + 2];
-            if (leftSum == rightSum) return true;
-        }
+
         return false;
     }
 }
