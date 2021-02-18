@@ -7,13 +7,13 @@ import java.util.List;
 
 public class BaseAuthService implements AuthService {
 
-    private List<Entry> entryList;
+    private final List<Entry> entryList;
 
     public BaseAuthService() {
         entryList = new ArrayList<>();
-        entryList.add(new Entry("David", "qazwsx", "One"));
-        entryList.add(new Entry("Viktor", "qwerty", "Two"));
-        entryList.add(new Entry("Vladimir", "123456", "Three"));
+        entryList.add(new Entry("D", "1", "One"));
+        entryList.add(new Entry("V", "1", "Two"));
+        entryList.add(new Entry("Vladimir", "1", "Three"));
     }
 
     @Override
@@ -36,10 +36,10 @@ public class BaseAuthService implements AuthService {
         return null;
     }
 
-    private class Entry {
-        private String login;
-        private String password;
-        private String nick;
+    private static class Entry {
+        private final String login;
+        private final String password;
+        private final String nick;
 
         public Entry(String login, String password, String nick) {
             this.login = login;
