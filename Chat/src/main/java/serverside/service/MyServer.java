@@ -1,6 +1,6 @@
 package serverside.service;
 
-import serverside.interfaces.AuthService;
+import serverside.interfaces.AuthenticationService;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -9,34 +9,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyServer {
+
     private final int PORT = 8081;
 
-    private List<ClientHandler> clients;
+    private List<ClientHandler> clientsList;
+    private AuthenticationService authService;
 
-    private AuthService authService;
-
-    public AuthService getAuthService() {
+    public AuthenticationService getAuthService() {
         return this.authService;
     }
 
     public MyServer() {
-        try (ServerSocket server = new ServerSocket(PORT)){
 
-            authService = new BaseAuthService();
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+            this.authService = new AuthenticationServiceImpl();
             authService.start();
-
-            clients = new ArrayList<>();
+            clientsList = new ArrayList<>();
 
             while (true) {
-                System.out.println("Сервер ожидает подключения");
-                Socket socket = server.accept();
-                System.out.println(socket.getInetAddress().getCanonicalHostName());
-                System.out.println("Клиент подклчился");
+                Socket socket = serverSocket.accept();
                 new ClientHandler(this, socket);
+
             }
 
-        } catch (IOException e){
-            System.out.println("Сервер не пережил землятрясение");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         } finally {
             if (authService != null) {
                 authService.stop();
@@ -44,48 +41,28 @@ public class MyServer {
         }
     }
 
-    public synchronized void broadcastMessage(String message) {
-        for (ClientHandler c : clients) {
+    public synchronized void sendMessageToClients(String message) {
+        for(ClientHandler c : clientsList) {
             c.sendMessage(message);
         }
     }
 
-    public synchronized void sendMessageToCertainClient(ClientHandler from, String toName, String message) {
-        for (ClientHandler c : clients) {
-            if (c.getName().equals(toName)) {
-                c.sendMessage(message);
-                from.sendMessage(message);
-            }
-        }
+    public synchronized void subscribe(ClientHandler c) {
+        clientsList.add(c);
     }
 
-    public synchronized void getOnlineUsersList(ClientHandler clientHandler) {
-        StringBuilder sb = new StringBuilder("");
-        for (ClientHandler c : clients) {
-            if (!c.equals(clientHandler)) {
-                sb.append(c.getName()).append(", ");
-            }
-        }
-        int size = sb.length();
-        sb.deleteCharAt(size - 1);
-        sb.deleteCharAt(size - 2);
-        clientHandler.sendMessage(sb.toString());
+    public synchronized void unSubscribe(ClientHandler c) {
+        clientsList.remove(c);
     }
 
-    public synchronized void subscribe(ClientHandler client) {
-        clients.add(client);
-    }
-
-    public synchronized void unsubscribe(ClientHandler client) {
-        clients.remove(client);
-    }
-
-    public boolean isNickBusy(String nick) {
-        for (ClientHandler c : clients) {
+    public synchronized boolean isNickBusy(String nick) {
+        /*for (ClientHandler c : clientsList) {
             if (c.getName().equals(nick)) {
                 return true;
             }
         }
-        return false;
+        return false;*/
+        return clientsList.stream()
+                .anyMatch(a -> a.getName().equals(nick));
     }
 }

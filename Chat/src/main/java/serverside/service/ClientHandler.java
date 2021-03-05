@@ -6,104 +6,59 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class ClientHandler {
-    
+
     private MyServer myServer;
     private Socket socket;
     private DataInputStream dis;
     private DataOutputStream dos;
-    
+
     private String name;
-    private volatile boolean endSession;
-    private boolean isAuthorized;
-    
-    
+
     public ClientHandler(MyServer myServer, Socket socket) {
         try {
-            
             this.myServer = myServer;
             this.socket = socket;
             this.dis = new DataInputStream(socket.getInputStream());
             this.dos = new DataOutputStream(socket.getOutputStream());
             this.name = "";
-            
+
             new Thread(() -> {
                 try {
                     authentication();
                     readMessage();
-                } catch (IOException ignored) {
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
                 } finally {
                     closeConnection();
                 }
-                
+
             }).start();
-
-            new Thread(() -> {
-                try {
-                    Thread.sleep(120000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (!isAuthorized) {
-                    closeConnection();
-                }
-            }
-
-            ).start();
-            
         } catch (IOException e) {
-            closeConnection();
-            throw new RuntimeException("Problem with ClientHandler");
+            System.out.println("Server problem");
         }
     }
 
-    public void authentication() throws IOException {
+    private void authentication() throws IOException {
         while (true) {
-            String str = dis.readUTF();
-            if (str.startsWith("/auth")) { //  /auth login password
-                String [] arr = str.split("\\s");
+            String authStr = dis.readUTF();
+            if (authStr.startsWith("/auth")) {
+                String[] arr = authStr.split("\\s");
                 String nick = myServer
                         .getAuthService()
                         .getNickByLoginAndPassword(arr[1], arr[2]);
-                if (nick != null) {
+                if (!nick.isEmpty()) {
                     if (!myServer.isNickBusy(nick)) {
-                        isAuthorized = true;
                         sendMessage("/authok " + nick);
                         name = nick;
-                        myServer.broadcastMessage("Hello " + name);
+                        myServer.sendMessageToClients(nick + " Joined to chat");
                         myServer.subscribe(this);
                         return;
                     } else {
-                        sendMessage("Nick is busy");
+                        sendMessage(name + " is busy");
                     }
                 } else {
-                    sendMessage("Wrong login and password");
+                    sendMessage("Wrong login/password");
                 }
-            } else {
-                sendMessage("Your command will be need start with /auth");
-            }
-        }
-    }
-
-    public void readMessage() throws IOException {
-        while (true) {
-            String messageFromClient = dis.readUTF();
-            System.out.println(name + " send message " + messageFromClient);
-            if (messageFromClient.trim().startsWith("/")) {
-
-                if (messageFromClient.startsWith("/w")) {
-                    String [] arr = messageFromClient.split(" ", 3);
-                    myServer.sendMessageToCertainClient(this, arr[1], name + ": " + arr[2]);
-                }
-
-                if (messageFromClient.trim().startsWith("/list")) {
-                    myServer.getOnlineUsersList(this);
-                }
-
-                if (messageFromClient.trim().startsWith("/end")) {
-                    return;
-                }
-            } else {
-                myServer.broadcastMessage(name + ": " + messageFromClient);
             }
         }
     }
@@ -115,22 +70,23 @@ public class ClientHandler {
         }
     }
 
-    private void closeConnection() {
-        myServer.unsubscribe(this);
-        myServer.broadcastMessage(name + " Leave chat");
-        try {
-            dis.close();
-            dos.close();
-            socket.close();
-        } catch (IOException ignored) {
-        }
-    }
-
     public String getName() {
         return name;
     }
 
-    private void closeSessionBytimeOut() {
+    private void readMessage() throws IOException {
+        while (true) {
+            String messageFromClient = dis.readUTF();
+            if (messageFromClient.equals("/q")) {
+                sendMessage(messageFromClient);
+                return;
+            }
+            myServer.sendMessageToClients(name + ": " + messageFromClient);
+        }
+    }
 
+    private void closeConnection() {
+        myServer.unSubscribe(this);
+        myServer.sendMessageToClients(name + " leave chat");
     }
 }
