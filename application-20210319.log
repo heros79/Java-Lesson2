@@ -1,0 +1,8 @@
+2021-03-19 21:45:55.029 [main] INFO  Main - Class Main
+2021-03-19 21:45:55.033 [main] INFO  A - class A
+2021-03-19 21:47:11.425 [main] INFO  Main - Class Main
+2021-03-19 21:47:11.439 [main] ERROR A - A@3c77d488
+2021-03-19 21:49:13.272 [main] INFO  Main - Class Main
+2021-03-19 21:49:13.293 [main] INFO  A - [Ljava.lang.StackTraceElement;@3c77d488
+2021-03-19 21:49:59.410 [main] INFO  Main - Class Main
+2021-03-19 21:49:59.431 [main] INFO  A - java.lang.ArithmeticException: / by zero
